@@ -9,9 +9,9 @@ export function activate(context: vscode.ExtensionContext) {
 
     let disposable = vscode.commands.registerCommand('extension.execSql', () => {
         // TODO: Captura o texto
+        captureDocumentText();
+
         // TODO: Executa comando
-        
-        vscode.window.showInformationMessage('Hello World!');
     });
 
     context.subscriptions.push(disposable);
@@ -19,4 +19,23 @@ export function activate(context: vscode.ExtensionContext) {
 
 // this method is called when your extension is deactivated
 export function deactivate() {
+}
+
+function getCurrentDocument() {
+    let currentEditor = vscode.window.activeTextEditor;
+
+    if(currentEditor) {
+        return currentEditor.document;
+    }
+    
+    return null;
+}
+
+// capture entire document text
+function captureDocumentText() {
+    let document = getCurrentDocument();
+ 
+    let text = (document != null) ? document.getText() : '';
+
+    vscode.window.showInformationMessage(text);
 }
