@@ -8,8 +8,9 @@ import * as vscode from 'vscode';
 export function activate(context: vscode.ExtensionContext) {
 
     let disposable = vscode.commands.registerCommand('extension.execSql', () => {
-        // TODO: Captura o texto
-        captureDocumentText();
+
+        let text = getSelectedText();
+        vscode.window.showInformationMessage(text);
 
         // TODO: Executa comando
     });
@@ -21,21 +22,21 @@ export function activate(context: vscode.ExtensionContext) {
 export function deactivate() {
 }
 
-function getCurrentDocument() {
+function getSelectedText() {
     let currentEditor = vscode.window.activeTextEditor;
+    let text : string = null;
 
     if(currentEditor) {
-        return currentEditor.document;
+        let document = currentEditor.document;
+        let selection = currentEditor.selection;
+
+        if(selection.isEmpty == true) {
+            text = document.getText();
+        } else {
+            text = document.getText(selection)
+        }
     }
     
-    return null;
+    return text;
 }
 
-// capture entire document text
-function captureDocumentText() {
-    let document = getCurrentDocument();
- 
-    let text = (document != null) ? document.getText() : '';
-
-    vscode.window.showInformationMessage(text);
-}

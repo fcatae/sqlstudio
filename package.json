@@ -18,6 +18,10 @@
         "commands": [{
             "command": "extension.execSql",
             "title": "ExecSQL"
+        }],
+        "keybindings": [{
+            "command": "extension.execSql",
+            "key": "ctrl+E"
         }]
     },
     "scripts": {
