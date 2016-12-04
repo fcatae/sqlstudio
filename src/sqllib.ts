@@ -43,8 +43,7 @@ export class SqlConnection {
 
         return new Promise<void>( (resolve, reject)=>{
             this.openWithCallback( 
-                listener && listener.reportInfo,
-                listener && listener.reportError,
+                listener,
                 (err) => {
                     if(err) {
                         reject(err);
@@ -55,14 +54,14 @@ export class SqlConnection {
         });
     }
 
-    private openWithCallback(reportInfo, reportError, done) {
+    private openWithCallback(listener, done) {
         var connection = new Connection(this._options);
         
         connection.on('infoMessage', function(e) {
-            reportInfo(e);
+            listener && listener.reportInfo && listener.reportInfo(e);
         });
         connection.on('errorMessage', function(e) {
-            reportError(e);
+            listener && listener.reportError && listener.reportError(e);
         });
 
         connection.on('end', function(err) {
