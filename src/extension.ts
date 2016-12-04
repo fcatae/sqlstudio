@@ -3,6 +3,7 @@
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
 import { SqlConnection } from './sqllib';
+import * as Transform from './datatransform';
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
@@ -62,13 +63,16 @@ function executeSql(text: string) {
         return connection.execute(text).then( ()=> {
             connection.close();
         });
-    }).catch( ()=>{ });;
+    }).catch( ()=>{ 
+        console.log('FAILED');
+    });;
 
 }
 
 
 class DataOutput {
     _output: any;
+    _format_output: any;    
 
     constructor(output) {
         this._output = output;
@@ -83,10 +87,25 @@ class DataOutput {
     }
 
     progressHeader(header) {
-        this._output.log('header');
+
+        var format = Transform.createFormat(header);
+        var format_output = Transform.create(format);
+        format_output.attach(header);
+
+        var h = format_output.printHeader();
+        var s = format_output.printSeparator();
+        
+        this._output.log('');
+        this._output.log(h);
+        this._output.log(s);
+
+        this._format_output = format_output;                    
     }
     
     progressRow(row) {
-        this._output.log('row');
+        var format_output = this._format_output;
+
+        var r = format_output.printRow(row);
+        this._output.log(r);
     }
 } 
