@@ -44,7 +44,7 @@ export class SqlConnection {
         };
         
         this._options = config;
-        this._listener = (listener) ? listener : new ConsoleErrorOutput();
+        this._listener = (listener !== undefined) ? listener : new ConsoleErrorOutput();
     }
     
     async open() {

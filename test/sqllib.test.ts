@@ -20,11 +20,12 @@ suite("SQLLib Tests", () => {
     });
 
     test("SQL_Open: Wrong password", () => {
+        let silentListener = null;
         let connection = new sql.SqlConnection({
             username: 'sql', password: '--invalid--',
             appname: 'test',
             servername: null, database: null 
-        });
+        }, silentListener);
 
         let deferred = connection.open().then( ()=>{
             assert(false, 'connection should fail with wrong password');
