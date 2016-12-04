@@ -1,19 +1,36 @@
 import * as assert from 'assert';
 import * as vscode from 'vscode';
-import { SqlConnection, getConnection } from '../src/sqllib';
+import * as sql from '../src/sqllib';
 
 suite("SQLLib Tests", () => {
-
-    // Defines a Mocha unit test
-    test("connect", () => {
-        var conn = getConnection({ username: 'sql', password: 'sql'}, () => {
-
-        });
-        conn.open( () => {
-            console.log('open');            
+    
+    test("SQL_Open", () => {
+        let connection = new sql.SqlConnection({
+            username: 'sql', password: 'sql',
+            appname: 'test',
+            servername: null, database: null 
         });
 
-        assert.equal(-1, [1, 2, 3].indexOf(5));
-        assert.equal(-1, [1, 2, 3].indexOf(0));
+        let deferred = connection.open().then((err)=>{
+            connection.close();
+            assert.equal(err, null);
+        });
+
+        return deferred;
     });
+
+    test("SQL_Open: Wrong password", () => {
+        let connection = new sql.SqlConnection({
+            username: 'sql', password: '--invalid--',
+            appname: 'test',
+            servername: null, database: null 
+        });
+
+        let deferred = connection.open().then( ()=>{
+            assert(false, 'connection should fail with wrong password');
+        }).catch( (err)=>{
+        })
+
+        return deferred;
+    });    
 });

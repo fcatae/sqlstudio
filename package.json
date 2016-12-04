@@ -41,6 +41,7 @@
     "@types/mocha": "^2.2.32"
   },
   "dependencies": {
-    "tedious": "^1.14.0"
+    "tedious": "^1.14.0",
+    "@types/tedious": "1.8.28"
   }
 }
