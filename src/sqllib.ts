@@ -59,7 +59,7 @@ export class SqlConnection {
         });
     }
 
-    openWithCallback(done) {
+    private openWithCallback(done) {
         var connection = new Connection(this._options);
         var that = this;
         
@@ -94,69 +94,79 @@ export class SqlConnection {
             this._connection = null;
         }
     }
-    // execute(sql_request, done) {
-        
-    //     var row_output = new RowOutput();
-        
-    //     this.executeBatch(sql_request, 
-    //         row_output.progressHeader.bind(row_output), 
-    //         row_output.progressRow.bind(row_output), 
-    //         function(err, rowCount) {
-    //             done(err, row_output);
-    //     })    
-    // }   
-     
-    // executeBatch(sql_batch, progress_header, progress_row, done) {
-        
-    //     var connection = this._connection;
-        
-    //     var request = new Request(sql_batch, function(err, rowCount) {
-    //         done && done(err, rowCount);        
-    //         });
 
-    //     request.on('columnMetadata', function(columns) {
+    async execute(sql_request: string) {
 
-    //         var columnOutput = columns.map(function(elem, i) {
-    //             var header = {
-    //                 index: i,
-    //                 name: elem.colName,
-    //                 size: elem.dataLength,
-    //                 type: elem.type.type
-    //                 //typeSize: elem.type.maximumLength
-    //             };
-    //             return header;
-    //         });
-    //         columns.map(function(elem, i) {
-    //             (elem.colName.length > 0) && (columnOutput[elem.colName] = columnOutput[i]);                
-    //         });
+        var listener = this._listener;
+        
+        return new Promise<void>( (resolve,reject)=>{
+            this.executeWithDone(sql_request, 
+                listener.progressHeader.bind(listener), 
+                listener.progressRow.bind(listener), 
+                function(err, rowCount) {
+                    if(err) {
+                        reject(err);
+                    } else {
+                        resolve();
+                    }                    
+                })    
+        });
+    }   
+    
+    executeWithDone(sql_batch, progress_header, progress_row, done) {
+        
+        var connection = this._connection;
+        
+        var request = new Request(sql_batch, function(err, rowCount) {
+            done && done(err, rowCount);        
+            });
+
+        request.on('columnMetadata', function(columns) {
+
+            // project only the required data
+            var columnOutput = columns.map(function(elem, i) {
+                var header = {
+                    index: i,
+                    name: elem.colName,
+                    size: elem.dataLength,
+                    type: elem.type.type
+                };
+                return header;
+            });
+
+            // create the inverted index
+            columns.map(function(elem, i) {
+                // add column name only if it is not empty  
+                (elem.colName.length > 0) && (columnOutput[elem.colName] = columnOutput[i]);                
+            });
             
-    //         progress_header && progress_header(columnOutput);
+            progress_header && progress_header(columnOutput);
                 
-    //     });
-    //     request.on('row', function(columns) {
+        });
+        request.on('row', function(columns) {
             
-    //         var columnOutput = columns.map(function(elem) {
-    //             return elem.value;
-    //             //return (elem.value instanceof Uint8Array) ? getArray(elem.value) : elem.value;
-    //         })
+            var columnOutput = columns.map(function(elem) {
+                return elem.value;
+                //return (elem.value instanceof Uint8Array) ? getArray(elem.value) : elem.value;
+            })
 
-    //         progress_row && progress_row(columnOutput);
+            progress_row && progress_row(columnOutput);
                     
-    //         // function getArray(arr) {
-    //         //     var p = '0x';
-    //         //     var b = arr.reduce(function(prev,cur) {
-    //         //     var hex = cur.toString(16);
-    //         //     hex = (hex.length == 1) ? '0' + hex : hex;
-    //         //     
-    //         //     return prev + hex; 
-    //         //     });
-    //         //     return p + b;
-    //         // }
+            // function getArray(arr) {
+            //     var p = '0x';
+            //     var b = arr.reduce(function(prev,cur) {
+            //     var hex = cur.toString(16);
+            //     hex = (hex.length == 1) ? '0' + hex : hex;
+            //     
+            //     return prev + hex; 
+            //     });
+            //     return p + b;
+            // }
             
-    //     });
+        });
         
-    //     connection.execSql(request);    
-    // }    
+        connection.execSql(request);    
+    }    
 }
 
 // function getConnection(parameters, done) {
