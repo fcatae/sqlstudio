@@ -3,15 +3,6 @@ import * as tds from 'tedious';
 var Connection = tds.Connection;
 var Request = tds.Request;
 
-interface IOutput {
-    progressHeader(header) : void;
-    progressRow(row) : void;
-}
-
-interface ISqlConnection {
-
-}
-
 interface IConnectionOptions {
     username: string;
     password: string;
@@ -48,26 +39,30 @@ export class SqlConnection {
     }
     
     async open() {
+        let listener = this._listener; 
+
         return new Promise<void>( (resolve, reject)=>{
-            this.openWithCallback( (err) => {
-                if(err) {
-                    reject(err);
-                } else {
-                    resolve();
-                }
-            });
+            this.openWithCallback( 
+                listener && listener.reportInfo,
+                listener && listener.reportError,
+                (err) => {
+                    if(err) {
+                        reject(err);
+                    } else {
+                        resolve();
+                    }
+                });
         });
     }
 
-    private openWithCallback(done) {
+    private openWithCallback(reportInfo, reportError, done) {
         var connection = new Connection(this._options);
-        var that = this;
         
         connection.on('infoMessage', function(e) {
-            that._listener && that._listener.reportInfo(e);
+            reportInfo(e);
         });
         connection.on('errorMessage', function(e) {
-            that._listener && that._listener.reportError(e);
+            reportError(e);
         });
 
         connection.on('end', function(err) {
@@ -103,7 +98,7 @@ export class SqlConnection {
             this.executeWithDone(sql_request, 
                 listener.progressHeader.bind(listener), 
                 listener.progressRow.bind(listener), 
-                function(err, rowCount) {
+                function(err) {
                     if(err) {
                         reject(err);
                     } else {
@@ -118,7 +113,7 @@ export class SqlConnection {
         var connection = this._connection;
         
         var request = new Request(sql_batch, function(err, rowCount) {
-            done && done(err, rowCount);        
+            done && done(err);        
             });
 
         request.on('columnMetadata', function(columns) {

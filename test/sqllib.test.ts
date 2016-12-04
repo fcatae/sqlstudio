@@ -48,10 +48,7 @@ suite("SQLLib Tests", () => {
 
             return connection.execute(';select 1234 as ABC;select 1234 as ABC').then( ()=> {
                 let r = rowoutput;
-                console.log(1);
                 connection.close();
-                assert.equal(err, null);
-
             });
 
         });
