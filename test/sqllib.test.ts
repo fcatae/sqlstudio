@@ -35,7 +35,7 @@ suite("SQLLib Tests", () => {
         return deferred;
     });
 
-    test.only("SQL_Execute", () => {
+    test("SQL_Execute", () => {
 
         let rowoutput = new DataOutput();
         let connection = new sql.SqlConnection({
